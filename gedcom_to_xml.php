@@ -23,8 +23,8 @@ $node = 0;
 
 if (!$handle) {
 
-	echo 'Could not locate file.';
-	die();
+    echo 'Could not locate file.';
+    die();
 
 } else {
 
@@ -35,55 +35,53 @@ if (!$handle) {
     $writer->startElement("GEDCOM");
 
     $i = 0;
-	while (!feof($handle)) {
+    while (!feof($handle)) {
         $i++;
 
-		// utf8 encode the line/string for internationalization
-		$line = utf8_encode(fgets($handle));
+        // utf8 encode the line/string for internationalization
+        $line = utf8_encode(fgets($handle));
 
-    	// get parent level
-    	$parent_node = ($node) ? $node : 0;
+        // get parent level
+        $parent_node = ($node) ? $node : 0;
 
-    	// get level
-    	$node = substr($line, 0, 1);
-        
-    	/**
-     	 * Three ways to match
-     	 *
+        // get level
+        $node = substr($line, 0, 1);
+
+        /**
+         * Three ways to match
+         *
          * 	2 PLAC McAlester OK     => '2', 'PLAC', 'McAlester OK'
          *	1 NOTE @NI01@           => '1', 'NOTE', 'NI01'
          * 	0 @NI01@ NOTE           => '0', 'NI01', 'NOTE'
-    	 */
+         */
 
-    	// 1 NOTE @NI01@
-    	preg_match( '/\d{1,2} (\w+) (@\w*@)/', $line, $matches );
+        // 1 NOTE @NI01@
+        preg_match( '/\d{1,2} (\w+) (@\w*@)/', $line, $matches );
 
-		if (count($matches) > 0) {
-        	$tag        = $matches[1];
-        	$attribute  = str_replace('@', '', $matches[2]);
-			$text       = trim(substr($line, strlen($matches[0])));
-    	} else {
-        	// 0 @NI01@ NOTE
-        	preg_match( '/\d{1,2} (@\w*@) (\w+)/', $line, $matches );
+        if (count($matches) > 0) {
+            $tag        = $matches[1];
+            $attribute  = str_replace('@', '', $matches[2]);
+            $text       = trim(substr($line, strlen($matches[0])));
+        } else {
+            // 0 @NI01@ NOTE
+            preg_match( '/\d{1,2} (@\w*@) (\w+)/', $line, $matches );
 
-        	if (count($matches) > 0) {
-        	    $tag        = $matches[2];
-        	    $attribute  = str_replace('@', '', $matches[1]);
-            	$text       = trim(substr($line, strlen($matches[0])));
-        	} else {
-           		// 2 PLAC Orlando FL
-            	// This has to be last because it will match.
+            if (count($matches) > 0) {
+                $tag        = $matches[2];
+                $attribute  = str_replace('@', '', $matches[1]);
+                $text       = trim(substr($line, strlen($matches[0])));
+            } else {
+                // 2 PLAC Orlando FL
+                // This has to be last because it will match.
                 preg_match( '/\d{1,2} (\w+)/', $line, $matches );
 
-            	if (count($matches) > 0) {
-            	    $tag        = $matches[1];
-           			$attribute  = '';
-            		$text       = trim(substr($line, strlen($matches[0])));
-            	} else {
-
-            	}
-        	}
-    	}
+                if (count($matches) > 0) {
+                    $tag        = $matches[1];
+                    $attribute  = '';
+                    $text       = trim(substr($line, strlen($matches[0])));
+                }
+            }
+        }
 
         // If the difference between the parent node and the child node
         // results in -1 then you have reached a new child node.
@@ -154,13 +152,13 @@ if (!$handle) {
         if (0 == $i % 1000) {
             file_put_contents($xml, $writer->flush(true), FILE_APPEND);
         }
-	}
+    }
 
     $writer->endElement();
     $writer->endDocument();
     file_put_contents($xml, $writer->flush(true), FILE_APPEND);
 
-	fclose($handle);
+    fclose($handle);
 }
 
 $time_end = microtime(true);
